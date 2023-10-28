@@ -1,0 +1,41 @@
+version: '3.5'
+services:
+  
+  jellfyfin:
+    image: jellyfin/jellyfin
+    container_name: jellyfin
+    network_mode: 'host'
+    ports:
+      - "8096:8096"
+    volumes:
+      - jellyfin-config:/config
+      - jellyfin-cache:/cache
+      - ${MEDIA_FOLDER}/completed:/media
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  transmission-openvpn:
+      cap_add:
+          - NET_ADMIN
+      volumes:
+          - 'transmission-config:/config'
+          - '${MEDIA_FOLDER}:/data'
+      environment:
+          - OPENVPN_PROVIDER=${OPENVPN_PROVIDER}
+          - OPENVPN_CONFIG=${OPENVPN_CONFIG}
+          - OPENVPN_USERNAME=${OPENVPN_USERNAME}
+          - OPENVPN_PASSWORD=${OPENVPN_PASSWORD}
+          # - LOCAL_NETWORK=192.168.0.0/16
+      logging:
+          driver: json-file
+          options:
+              max-size: 10m
+      ports:
+          - '9091:9091'
+      image: haugene/transmission-openvpn
+
+volumes:
+  jellyfin-config:
+  jellyfin-cache:
+
+  transmission-config:
